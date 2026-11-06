@@ -1,0 +1,100 @@
+{
+  "_lisezmoi": "Règles de tri du radar. Les motifs sont des expressions régulières appliquées à un texte en minuscules, SANS accents (ex. : 'frappe', 'evacu'). 'US'/'U.S.' en majuscules est converti en 'usa', 'EAU' en 'emirats', et les tournures 'Iran-backed' / 'pro-iranien' en 'proxy' pour éviter les fausses alertes. Les intitulés de rubrique du type 'Iran war:' en début de titre sont ignorés pour le calcul du niveau. Les acteurs disent de qui on parle, les événements ce qui se passe. Le niveau (rouge/orange) se calcule sur le TITRE ; la pertinence sur titre + résumé. 'attenuants' baisse le niveau d'un cran (menace, analyse, revendication…). 'attribution' (ex. 'selon l'agence iranienne') empêche l'étiquette Confirmé. 'plafonds' limite le niveau quand un groupe est présent.",
+
+  "acteurs": ["iran", "israel", "usa", "dubai", "golfe", "proxies", "gaza", "ormuz"],
+
+  "groupes": {
+    "iran": ["\\biran", "\\btehran", "\\bteheran", "\\birgc\\b", "pasdaran", "gardiens de la revolution", "revolutionary guard", "khamenei", "pezeshkian", "araghchi", "larijani", "qalibaf", "ghalibaf", "\\bquds force", "force al-?qods", "natanz", "\\bfordo", "isfahan", "ispahan", "bushehr", "\\bkharg", "\\bqeshm", "bandar abbas", "chabahar", "axis of resistance", "axe de la resistance"],
+    "israel": ["\\bisrael", "\\bidf\\b", "tsahal", "netanyahu", "netanyahou", "\\bmossad", "tel[ -]aviv", "jerusalem", "knesset", "shin bet", "iron dome", "dome de fer", "eisenkot", "\\bgantz", "\\blapid\\b", "israel katz"],
+    "usa": ["\\busa\\b", "united states", "etats-unis", "\\bamerica", "\\bamericain", "pentagon", "department of war", "war department", "white house", "maison blanche", "\\btrump", "\\bvance\\b", "\\brubio\\b", "hegseth", "witkoff", "centcom", "\\bwashington\\b", "state department", "departement d'etat", "aircraft carrier", "porte-avions", "\\buss\\b"],
+    "dubai": ["\\bdubai", "abu dhabi", "abou dhabi", "\\bemirat", "\\buae\\b", "emirates", "emirien", "sharjah", "fujairah", "foujeyra", "ras al[- ]khaimah", "al dhafra", "jebel ali", "\\bdxb\\b", "flydubai", "etihad", "\\bncema\\b"],
+    "golfe": ["golfe persique", "persian gulf", "\\bgulf\\b(?! (?:of (?:mexico|america|guinea|thailand|alaska|california)|coast|shores|stream|war syndrome))", "\\bgolfe\\b(?! (?:du mexique|de guinee|d'amerique|de gascogne|du lion))", "\\bgcc\\b", "\\bqatar", "\\bdoha\\b", "\\bbahrain", "\\bbahrein", "\\bkuwait", "\\bkoweit", "\\boman\\b", "\\bsaudi", "arabie saoudite", "\\briyadh?\\b", "\\bmanama"],
+    "proxies": ["hezbollah", "hizbollah", "\\bhouthi", "ansar allah", "ansarallah", "kataib", "\\bhashd", "popular mobilization", "islamic resistance in iraq", "resistance islamique en irak", "\\bproxy\\b"],
+    "gaza": ["\\bgaza", "\\bhamas\\b", "cisjordanie", "west bank"],
+    "ormuz": ["\\bhormuz", "\\bormuz", "musandam", "khasab", "gulf of oman", "golfe d'oman", "\\bukmto", "\\bjmic\\b", "bab el[- ]mandeb", "red sea", "mer rouge"],
+
+    "critique": [
+      "declares? war", "declaration of war", "declare la guerre",
+      "nuclear test", "essai nucleaire", "weapons-grade", "de qualite militaire",
+      "ballistic missiles? (?:launched|fired|toward|towards|at|on|hit)", "missiles? balistiques? (?:tires?|lances?|vers|sur|contre)",
+      "barrage of (?:missiles|rockets|drones)", "salves? de missiles",
+      "sirens? (?:across|throughout|sound(?:ed)? (?:in|across) (?:tel aviv|jerusalem|central))", "sirenes? (?:retenti\\w* (?:a|dans) (?:tel[ -]aviv|jerusalem)|dans tout)",
+      "(?:closes|closed|shuts|shut|closure of|suspends) (?:its |the )?airspace", "airspace (?:closed|closure|shut)", "ferme son espace aerien", "fermeture de (?:son |l')espace aerien", "espace aerien ferme",
+      "(?:close|closes|closed|closure of|block|blocks|blocked|mines|mined|shut) (?:the )?(?:strait of )?hormuz", "hormuz (?:closed|closure|blocked|shut)", "fermeture du detroit d'ormuz", "ormuz (?:est )?ferme", "bloque le detroit",
+      "shelter in place", "mise a l'abri", "abris? anti",
+      "state of emergency", "etat d'urgence", "martial law", "loi martiale",
+      "ground (?:offensive|invasion|troops) (?:in|into|on) iran",
+      "regime (?:collapse|falls|has fallen)", "supreme leader (?:killed|dead|dies|assassinated)", "khamenei (?:killed|dead|dies|assassinated)", "mort de (?:mojtaba )?khamenei",
+      "(?:strike|strikes|attack|attacks|bombing) on (?:iran'?s? )?(?:nuclear|fordo|natanz|isfahan|bushehr|kharg)", "frappes? (?:sur|contre) (?:les sites |le site |l'usine )?(?:nucleaires?|fordo|natanz|ispahan|bushehr)",
+      "us embassy (?:attacked|hit|struck)", "ambassade (?:americaine|des etats-unis) (?:attaquee|visee|touchee)",
+      "(?:reach|reached|reaches|sign|signed|signs|seal|sealed|seals|strike|strikes|struck|announce|announced|announces|agree|agreed|agrees) (?:on )?(?:a |an |the )?(?:nuclear |peace )?(?:deal|agreement|ceasefire|cease-fire|truce|peace)",
+      "accord (?:est )?(?:conclu|signe|trouve|annonce)", "(?:concluent|signent|annoncent|trouvent) un accord", "cessez-le-feu (?:conclu|signe|annonce|entre en vigueur)",
+      "(?:announces?|announced|declares?|declared|agrees? to|agreed to) (?:an |the )?end (?:of|to) the war", "\\bwar (?:is )?over\\b", "\\bends? the war", "fin de la guerre (?:est )?(?:annoncee|actee|signee|officielle)", "met fin a la guerre",
+      "(?:resume|resumes|resumed|renewed|new wave of) (?:the )?(?:war|strikes|airstrikes|attacks|hostilities) (?:on|against|in) iran", "reprise (?:de la guerre|des frappes|des hostilites)"
+    ],
+
+    "cinetique": ["\\bstrikes?\\b", "\\bstruck\\b", "airstrike", "air strike", "\\battack", "\\bmissiles?\\b", "\\bballistic", "\\bdrones?\\b", "\\brockets?\\b", "explosion", "\\bblasts?\\b", "\\bexplod", "\\bkill(?:s|ed|ing)?\\b", "casualt", "assassinat", "\\bbomb(?:s|ed|ing|ings)?\\b", "shot down", "shoots down", "intercept", "\\bsirens?\\b", "\\braids?\\b", "retaliat", "fire[sd]? (?:missiles?|rockets?|drones?)", "launch(?:es|ed)? (?:missiles?|rockets?|drones?|attack)", "\\bfrappes?\\b", "\\battaqu", "\\broquettes?\\b", "balistique", "\\bexplos", "\\btue(?:e|s|es)?\\b", "\\bmorts?\\b", "\\bvictimes\\b", "bombardement", "bombarde(?:e|s|es)?\\b", "\\babattu", "\\bsirenes?\\b", "riposte", "represailles", "\\btirs? de"],
+
+    "militaire": ["war plans?", "plans? de guerre", "resum\\w* (?:the )?war", "reprise de la guerre", "return to war", "retour a la guerre", "renewed (?:war|conflict|strikes|attacks|hostilities)", "war footing", "pied de guerre", "(?<!de-)(?<!de )escalat", "(?<!des)escalade", "military", "militaire", "troops", "troupes", "\\bdeploy", "\\bdeploie", "deploiement", "\\bcarriers?\\b", "porte-avions", "\\bbombers?\\b", "bombardiers?", "warships?", "destroyers?", "fighter jets", "avions de chasse", "\\bf-35", "\\bb-2\\b", "\\bb-52", "\\bthaad\\b", "\\bpatriot\\b", "air defen", "defense aerienne", "\\bs-400", "mobiliz", "mobilis", "on alert", "en alerte", "high alert", "alerte maximale", "ultimatum", "red line", "ligne rouge", "\\bnavy\\b", "\\bblockade", "\\bblocus"],
+    "nucleaire": ["\\biaea\\b", "\\baiea\\b", "\\bgrossi\\b", "enrich", "uranium", "nuclear", "nucleaire", "centrifug", "snapback", "\\bnpt\\b", "\\btnp\\b", "inspectors?", "inspecteurs?", "atomic", "atomique"],
+    "diplo": ["\\btalks\\b", "negotiat", "negocia", "pourparlers", "\\bdeal\\b", "agreement", "\\baccord\\b", "mediat", "ceasefire", "cease-fire", "truce", "\\btreve", "cessez-le-feu", "\\benvoy", "emissaire", "summit", "sommet", "diplomat", "proposal", "proposition", "\\bletter\\b", "\\blettre\\b", "deadline", "date butoir", "\\bmeets?\\b", "rencontre", "\\bcall with\\b", "\\bholds? call\\b", "entretien", "s'entretient"],
+    "sanctions": ["sanction", "\\bofac\\b", "treasury", "\\btresor\\b", "embargo", "blacklist", "designat", "frozen assets", "gel des avoirs", "seiz(?:e|es|ed|ure) (?:of )?(?:funds|assets)"],
+    "evacuation": ["evacuat", "\\bevacu", "ordered departure", "depart ordonne", "leave (?:the country|immediately)", "quitter (?:le pays|immediatement|le territoire)", "rapatri", "repatriat"],
+    "aerien": ["airspace", "espace aerien", "\\bflights?\\b", "\\bvols?\\b", "airport", "aeroport", "airlines?", "compagnies? aeriennes?", "\\bnotam", "\\beasa\\b", "\\baesa\\b", "\\bfaa\\b", "\\bgcaa\\b", "\\bcancel", "\\bannul", "\\bsuspend", "\\bdivert", "\\bderout"],
+    "navire": ["tankers?", "petroliers?", "cargo", "navires?", "vessels?", "\\bships?\\b", "shipping", "merchant", "bateaux?", "\\bboats?\\b", "seafarer", "\\bsailors?\\b", "\\bmarins?\\b", "seiz(?:e|es|ed|ure)", "arraisonn", "saisi"],
+    "petrole": ["\\boil\\b", "\\bbrent\\b", "\\bcrude\\b", "petrole", "\\bbarils?\\b", "barrels?", "\\bopec", "\\bopep", "\\blng\\b", "\\bgnl\\b", "murban", "\\bgas prices?", "prix du gaz"],
+    "politique": ["election", "electoral", "coalition", "prime minister", "premier ministre", "knesset", "majlis", "congress", "congres", "\\bsenate", "\\bsenat\\b", "resign", "demission", "\\bvote", "supreme court", "cour supreme", "midterm", "form(?:s|ing)? (?:a |the |next )?government", "former (?:un|le) gouvernement", "new government", "nouveau gouvernement", "impeach", "destitution", "\\bmandate\\b", "\\bmandat\\b"],
+    "secu": ["attack", "attaqu", "strike", "frappe", "missile", "drone", "rocket", "roquette", "military", "militaire", "armee", "\\barmy\\b", "\\bwar\\b", "guerre", "security", "securite", "terror", "hostage", "otage", "ceasefire", "cessez-le-feu", "\\bdefen[cs]e", "intelligence", "renseignement", "\\bspy", "espion", "nuclear", "nucleaire", "threat", "menace", "\\balert", "\\balerte", "sanction", "embassy", "ambassade", "evacu", "airspace", "espace aerien", "explosion", "\\bblast", "\\bkilled", "\\btue", "\\bmorts?\\b", "intercept", "border", "frontiere", "troops", "troupes", "\\bnavy\\b"],
+
+    "alerte_secu": ["security alert", "alerte de securite", "travel advisory", "conseils aux voyageurs", "demonstration alert", "alerte (?:aux|pour les) (?:ressortissants|voyageurs)"],
+    "condamnation": ["condemn", "condamn", "denounc", "denonc", "condolence", "condoleance", "solidarit"],
+    "attribution": ["news agency reports?", "agence (?:de presse )?iranienne", "agences? iraniennes?", "state media", "state tv", "state television", "medias? d'etat", "iranian media", "medias? iraniens?", "\\btasnim\\b", "\\bfars\\b", "\\birna\\b", "\\bmehr\\b", "- report$", "^report:", "according to (?:iranian|state)", "selon (?:les )?medias iraniens", "\\bclaims?\\b", "revendiqu", "\\bunconfirmed\\b", "non confirme"],
+
+    "attenuants": ["threat", "\\bwarn", "\\bcould\\b", "\\bwould\\b", "\\bmay\\b", "\\bmight\\b", "\\bif\\b", "\\bplan(?:s|ned|ning)? to", "consider", "\\bweigh", "\\bprepar", "ready to", "\\bvows?\\b", "menace", "\\bavert", "pourrai", "envisag", "pret a", "se prepare", "\\bsi\\b", "\\?", "analysis", "\\banalyse", "opinion", "explainer", "what we know", "what to know", "need to know", "ce que l'on sait", "ce qu'il faut savoir", "a savoir", "\\bwhy\\b", "pourquoi", "\\bhow\\b", "\\bcomment\\b", "\\blive\\b", "\\blatest\\b", "en direct", "podcast", "\\bvideos?\\b", "^watch\\b", ", more$", "editorial", "tribune", "anniversary", "anniversaire", "years? (?:after|ago|since)", "ans apres", "memorial", "\\bhistory\\b", "\\bfears?\\b", "craint", "\\brisks?\\b", "\\brisque", "possible", "potential", "\\blikely\\b", "unlikely", "\\bdenies\\b", "\\bdenied\\b", "dement", "\\bhopes?\\b", "espoir", "optimis", "averted", "\\bevite", "\\brally\\b", "rebound", "rebond", "\\bfalls?\\b", "\\bdrops?\\b", "\\brecule", "\\bbaisse", "\\bstocks?\\b", "\\bbourse", "unveil", "devoile", "showcase", "parade", "\\bdefile", "exercise", "exercice", "\\bdrills?\\b", "manoeuvre", "test-fire", "\\btests?\\b", "program", "programme", "arsenal", "capabilit", "capacite", "stockpile", "production", "factory", "usine", "\\blimits?\\b", "\\bmemoir", "\\bbook\\b", "\\blivre\\b", "\\bfilm\\b", "\\bmovie\\b", "interview", "entretien avec", "letters? \\|", "\\boptions?\\b", "door open", "porte ouverte", "n'exclut pas", "rule[sd]? out", "satellite", "\\bimages?\\b", "suggest", "condemn", "condamn", "denounc", "denonc", "\\bsuppl(?:y|ies|ied)\\b", "\\bdeliver", "\\blivr", "\\bsells?\\b", "\\bsold\\b", "\\bvend", "acqui", "purchas", "\\bachat", "launchers?", "lanceurs?", "\\bclaims?\\b", "revendiqu", "\\bremains?\\b", "\\brestent\\b", "\\bstill\\b", "\\bseeks?\\b", "calls? for", "\\burges?\\b", "appelle a", "exhorte"]
+  },
+
+  "pertinence": [
+    ["iran"], ["ormuz"], ["proxies"],
+    ["israel", "usa", "secu"], ["israel", "usa", "diplo"], ["israel", "usa", "politique"], ["israel", "usa", "militaire"], ["israel", "usa", "sanctions"], ["israel", "dubai"], ["israel", "golfe"], ["israel", "secu"], ["israel", "politique"], ["israel", "nucleaire"],
+    ["usa", "dubai"], ["usa", "golfe", "secu"],
+    ["dubai", "secu"], ["dubai", "aerien"], ["dubai", "petrole"], ["dubai", "navire"],
+    ["golfe", "cinetique"], ["golfe", "militaire"], ["golfe", "aerien"], ["golfe", "navire"],
+    ["gaza", "iran"], ["gaza", "usa"]
+  ],
+
+  "rouge": [
+    ["critique"],
+    ["iran", "cinetique"],
+    ["dubai", "cinetique"]
+  ],
+
+  "orange": [
+    ["iran", "militaire"], ["iran", "nucleaire"], ["iran", "diplo"], ["iran", "sanctions"], ["iran", "evacuation"], ["iran", "aerien"],
+    ["usa", "evacuation"], ["dubai", "evacuation"], ["dubai", "aerien"], ["dubai", "militaire"],
+    ["golfe", "cinetique", "usa"], ["golfe", "cinetique", "navire"],
+    ["ormuz", "cinetique"], ["ormuz", "militaire"], ["ormuz", "navire"],
+    ["proxies", "cinetique", "usa"], ["proxies", "cinetique", "ormuz"], ["proxies", "cinetique", "navire"],
+    ["israel", "cinetique", "usa"], ["israel", "nucleaire"]
+  ],
+
+  "plafonds": [
+    {"groupe": "condamnation", "sauf": ["iran", "ormuz"], "max": "bleu"}
+  ],
+
+  "plafond_par_fiabilite": {"E": "orange", "X": "orange"},
+
+  "categories": [
+    ["critique", "Alerte majeure"],
+    ["alerte_secu", "Alerte de sécurité"],
+    ["cinetique", "Frappe / attaque"],
+    ["evacuation", "Évacuation"],
+    ["nucleaire", "Nucléaire"],
+    ["ormuz", "Ormuz / maritime"],
+    ["aerien", "Vols / espace aérien"],
+    ["diplo", "Diplomatie"],
+    ["sanctions", "Sanctions"],
+    ["militaire", "Forces armées"],
+    ["petrole", "Pétrole / marchés"],
+    ["politique", "Politique"]
+  ]
+}

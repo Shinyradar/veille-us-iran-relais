@@ -1,0 +1,92 @@
+name: Relais Veille US-Iran
+
+# Fait tourner le radar toutes les 5 minutes sur les serveurs de GitHub.
+# Tant que le PC signale qu'il est allumé (variable PC_POULS de moins de 20 min), le relais met
+# seulement son état à jour, sans rien envoyer : c'est le PC qui envoie les alertes.
+# Quand le PC est éteint ou en veille, le relais prend le relais et envoie les alertes sur ntfy.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      test_notif:
+        description: "Envoyer une notification de test sur le téléphone"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: relais
+  cancel-in-progress: false
+
+jobs:
+  relais:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer feedparser
+        run: pip install --quiet feedparser==6.0.14
+
+      - name: Restaurer l'état du relais
+        uses: actions/cache/restore@v4
+        with:
+          path: radar/etat
+          key: etat-${{ github.run_id }}
+          restore-keys: etat-
+
+      - name: Le PC est-il allumé ?
+        id: pouls
+        env:
+          PC_POULS: ${{ vars.PC_POULS }}
+        run: |
+          maintenant=$(date +%s)
+          if [ -n "$PC_POULS" ] && [ $((maintenant - PC_POULS)) -lt 1200 ]; then
+            echo "silencieux=1" >> "$GITHUB_OUTPUT"
+            echo "PC allumé (signal il y a $(( (maintenant - PC_POULS) / 60 )) min) : le relais se tait."
+          else
+            echo "silencieux=0" >> "$GITHUB_OUTPUT"
+            echo "PC éteint ou muet : le relais envoie les alertes."
+          fi
+
+      - name: Notification de test
+        if: ${{ inputs.test_notif }}
+        env:
+          NTFY_SUJET: ${{ secrets.NTFY_SUJET }}
+          PYTHONIOENCODING: utf-8
+        run: python radar/radar.py --test-notif
+
+      - name: Passage du radar
+        env:
+          NTFY_SUJET: ${{ secrets.NTFY_SUJET }}
+          RELAIS_SILENCIEUX: ${{ steps.pouls.outputs.silencieux }}
+          PYTHONIOENCODING: utf-8
+        run: python radar/radar.py --une-fois
+
+      - name: Sauver l'état du relais
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: radar/etat
+          key: etat-${{ github.run_id }}
+
+      - name: Garder le relais actif
+        # GitHub coupe les tâches programmées d'un dépôt public après 60 jours sans activité.
+        run: |
+          derniere=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - derniere )) -gt $((45 * 86400)) ]; then
+            git config user.name "relais-veille"
+            git config user.email "relais-veille@users.noreply.github.com"
+            date -u > .relais-actif
+            git add .relais-actif
+            git commit -m "Relais toujours actif"
+            git push
+          fi
