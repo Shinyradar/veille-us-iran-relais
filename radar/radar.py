@@ -205,13 +205,17 @@ SYNONYMES = {
     "etats": "usa",
 }
 MOTS_VIDES.update({"unis", "related", "linked", "report", "reports", "news"})
+# Les mois ne disent rien de l'événement : sans ça, deux alertes d'ambassade différentes datées de novembre
+# 2026 étaient prises pour la même info.
+MOTS_VIDES.update("""january february march april june july august september october november december
+janvier fevrier mars avril juin juillet aout septembre octobre novembre decembre""".split())
 
 
 def jetons(titre: str) -> set:
     t = re.sub(r"[^a-z0-9 ]", " ", normaliser(titre))
     out = set()
     for m in t.split():
-        if len(m) < 3 and m != "us":
+        if (len(m) < 3 and m != "us") or m.isdigit():  # chiffres (années, jours) exclus
             continue
         m = SYNONYMES.get(m, m)
         if m in MOTS_VIDES:
